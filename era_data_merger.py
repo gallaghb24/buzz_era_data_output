@@ -58,7 +58,20 @@ if st.session_state.step == 3:
                 today = datetime.today().strftime("%Y-%m-%d")
 
                 # --- Load club files ---
-                club_dfs = [pd.read_excel(f, header=1) for f in st.session_state.club_files]
+                club_dfs = []
+                for f in st.session_state.club_files:
+                    df = pd.read_excel(f, header=1)
+                    # Calculate total sell price from all price columns
+                    price_columns = [
+                        'Sell Price (DT)',
+                        'Sell Price (FT)',
+                        'Sell Price (STK)',
+                        'Sell Price (STA)',
+                        'Sell Price (RFP)'
+                    ]
+                    df['Total_Print_Sell'] = df[price_columns].sum(axis=1, skipna=True)
+                    club_dfs.append(df)
+                
                 club_df = pd.concat(club_dfs, ignore_index=True)
                 club_df.columns = club_df.columns.str.strip()
 
@@ -82,11 +95,15 @@ if st.session_state.step == 3:
                     part_info = PARTS_DATA.get(part, {})
 
                     try:
-                        p_val = float(row.get("Sell Price (FT)", 0))
+                        p_val = float(row.get("Total_Print_Sell", 0))
                         cp_val = 2.35
                         d_val = 5.33
                     except:
                         p_val, cp_val, d_val = 0, 2.35, 5.33
+
+                    # Skip this row if total print sell is zero
+                    if p_val == 0:
+                        continue
 
                     # Row 1
                     club_rows.append({

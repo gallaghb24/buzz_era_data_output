@@ -260,6 +260,47 @@ if st.session_state.step == 3:
                 buffer = io.BytesIO()
                 with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer:
                     final_df.to_excel(writer, sheet_name='Combined Data', index=False)
+                    
+                    # Get the xlsxwriter workbook and worksheet objects
+                    workbook = writer.book
+                    worksheet = writer.sheets['Combined Data']
+                    
+                    # Define formats
+                    border_fmt = workbook.add_format({
+                        'border': 1,  # Thin border
+                        'border_color': '#000000'  # Black color
+                    })
+                    
+                    header_fmt = workbook.add_format({
+                        'border': 1,
+                        'border_color': '#000000',
+                        'bold': True,
+                        'text_wrap': True,
+                        'valign': 'top'
+                    })
+                    
+                    # Apply formats to the header row
+                    for col_num, value in enumerate(final_df.columns.values):
+                        worksheet.write(0, col_num, value, header_fmt)
+                    
+                    # Auto-fit column widths based on data
+                    for idx, col in enumerate(final_df.columns):
+                        series = final_df[col]
+                        max_len = max(
+                            series.astype(str).apply(len).max(),  # max length of values
+                            len(str(series.name))  # length of column name
+                        ) + 2  # adding a little extra space
+                        worksheet.set_column(idx, idx, max_len)
+                    
+                    # Apply borders to the data range
+                    worksheet.conditional_format(
+                        0, 0, len(final_df), len(final_df.columns)-1,
+                        {'type': 'no_blanks', 'format': border_fmt}
+                    )
+                    worksheet.conditional_format(
+                        0, 0, len(final_df), len(final_df.columns)-1,
+                        {'type': 'blanks', 'format': border_fmt}
+                    )
                 
                 buffer.seek(0)
                 st.download_button(

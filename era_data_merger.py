@@ -101,10 +101,6 @@ if st.session_state.step == 3:
                     except:
                         p_val, cp_val, d_val = 0, 2.35, 5.33
 
-                    # Skip this row if total print sell is zero
-                    if p_val == 0:
-                        continue
-
                     # Row 1
                     club_rows.append({
                         "index no": index_counter,

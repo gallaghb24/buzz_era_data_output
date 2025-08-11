@@ -206,16 +206,17 @@ def main():
                         part_info = PARTS_DATA.get(part, {})
 
                         print_val = row.get("Print", 0)
-                        if pd.isna(print_val) or print_val == 0:
+                        cp_raw = row.get("Collate & pack", 0)
+                        d_raw = row.get("Despatch", 0)
+
+                        if pd.isna(print_val):
+                            print_val = 0
+
+                        if print_val == 0 and cp_raw == 0 and d_raw == 0:
                             print_val = row.get("Total", 0)
 
-                        cp_val = row.get("Collate & pack", 0)
-                        if pd.isna(cp_val) or cp_val == 0:
-                            cp_val = 2.35
-
-                        d_val = row.get("Despatch", 0)
-                        if pd.isna(d_val) or d_val == 0:
-                            d_val = 5.33
+                        cp_val = cp_raw if cp_raw != 0 else 2.35
+                        d_val = d_raw if d_raw != 0 else 5.33
 
                         sell_total = row.get("Total", 0)
                         if pd.isna(sell_total) or sell_total == 0:
